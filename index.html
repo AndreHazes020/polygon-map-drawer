@@ -21,29 +21,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- API Key Modal -->
-    <div id="api-key-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Welcome to Polygon Map Drawer</h2>
-            </div>
-            <div class="modal-body">
-                <p>To use this app, you need a Mapbox access token.</p>
-                <p class="hint">Get your free token at <a href="https://mapbox.com" target="_blank">mapbox.com</a></p>
-                <input type="text" id="api-key-input" placeholder="Enter your Mapbox access token">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="remember-key">
-                    <span>Remember on this device</span>
-                </label>
-            </div>
-            <div class="modal-footer">
-                <button id="save-api-key" class="btn btn-primary">Get Started</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Main App -->
-    <div id="app"
+    <div id="app">
         <!-- Header -->
         <header class="header">
             <h1>Polygon Drawer</h1>
@@ -107,12 +86,6 @@
                     <line x1="9" y1="21" x2="9" y2="9"></line>
                 </svg>
                 <span>Change Map Style</span>
-            </button>
-            <button id="change-key-btn" class="dropdown-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-                </svg>
-                <span>Change API Key</span>
             </button>
             <button id="help-btn" class="dropdown-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

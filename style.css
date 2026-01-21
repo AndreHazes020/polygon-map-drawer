@@ -220,23 +220,6 @@ body {
     color: var(--color-text-muted);
 }
 
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 16px;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--color-text-muted);
-}
-
-.checkbox-label input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    accent-color: var(--color-primary);
-    cursor: pointer;
-}
-
 .modal-footer {
     padding: 16px 24px 24px;
 }
