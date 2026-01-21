@@ -11,13 +11,11 @@
         defaultCenter: [4.9041, 52.3676],
         defaultZoom: 12,
         drawStorageKey: 'polygon-drawer-data',
-        styleStorageKey: 'polygon-drawer-style',
-        defaultStyle: 'satellite-streets-v12'
+        mapStyle: 'satellite-streets-v12'
     };
 
     let map = null;
     let draw = null;
-    let currentStyle = CONFIG.defaultStyle;
     let locationMarker = null;
     let searchTimeout = null;
 
@@ -28,13 +26,11 @@
         searchResults: document.getElementById('search-results'),
         areaDisplay: document.getElementById('area-display'),
         locateBtn: document.getElementById('locate-btn'),
-        styleBtn: document.getElementById('style-btn'),
         drawBtn: document.getElementById('draw-btn'),
         clearBtn: document.getElementById('clear-btn'),
         copyBtn: document.getElementById('copy-btn'),
         helpBtn: document.getElementById('help-btn'),
         helpModal: document.getElementById('help-modal'),
-        styleModal: document.getElementById('style-modal'),
         toast: document.getElementById('toast')
     };
 
@@ -54,14 +50,6 @@
         } else {
             return `${(sqMeters / 1000000).toFixed(2)} km²`;
         }
-    }
-
-    function getStoredStyle() {
-        return localStorage.getItem(CONFIG.styleStorageKey) || CONFIG.defaultStyle;
-    }
-
-    function setStoredStyle(style) {
-        localStorage.setItem(CONFIG.styleStorageKey, style);
     }
 
     function saveDrawData() {
@@ -151,12 +139,11 @@
     // Map Initialization
     function initMap(accessToken) {
         mapboxgl.accessToken = accessToken;
-        currentStyle = getStoredStyle();
 
         try {
             map = new mapboxgl.Map({
                 container: 'map',
-                style: `mapbox://styles/mapbox/${currentStyle}`,
+                style: `mapbox://styles/mapbox/${CONFIG.mapStyle}`,
                 center: CONFIG.defaultCenter,
                 zoom: CONFIG.defaultZoom,
                 attributionControl: true,
@@ -436,34 +423,6 @@
         }
     }
 
-    function changeMapStyle(styleName) {
-        if (!map) return;
-
-        currentStyle = styleName;
-        setStoredStyle(styleName);
-
-        const currentData = draw ? draw.getAll() : null;
-
-        map.setStyle(`mapbox://styles/mapbox/${styleName}`);
-
-        map.once('style.load', () => {
-            if (draw && currentData) {
-                map.removeControl(draw);
-                initDraw();
-                if (currentData.features.length > 0) {
-                    draw.set(currentData);
-                }
-            }
-        });
-
-        document.querySelectorAll('.style-option').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.style === styleName);
-        });
-
-        elements.styleModal.classList.add('hidden');
-        showToast('Style updated', 'success');
-    }
-
     // Event Listeners
     function setupEventListeners() {
         // Search
@@ -496,19 +455,11 @@
 
         // Toolbar buttons
         elements.locateBtn.addEventListener('click', handleLocate);
-        elements.styleBtn.addEventListener('click', () => {
-            elements.styleModal.classList.remove('hidden');
-        });
         elements.drawBtn.addEventListener('click', handleDraw);
         elements.clearBtn.addEventListener('click', handleClear);
         elements.copyBtn.addEventListener('click', handleCopy);
         elements.helpBtn.addEventListener('click', () => {
             elements.helpModal.classList.remove('hidden');
-        });
-
-        // Style options
-        document.querySelectorAll('.style-option').forEach(btn => {
-            btn.addEventListener('click', () => changeMapStyle(btn.dataset.style));
         });
 
         // Modal close
@@ -559,11 +510,6 @@
     function init() {
         setupEventListeners();
         initMap(CONFIG.embeddedApiKey);
-
-        const storedStyle = getStoredStyle();
-        document.querySelectorAll('.style-option').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.style === storedStyle);
-        });
     }
 
     if (document.readyState === 'loading') {
