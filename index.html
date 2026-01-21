@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta name="description" content="Draw polygons on a satellite map and export as GeoJSON">
-    <title>Polygon Map Drawer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Draw polygons on a satellite map and copy as GeoJSON">
+    <title>Polygon Drawer</title>
 
     <!-- Mapbox GL JS -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
@@ -21,77 +23,75 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Main App -->
     <div id="app">
-        <!-- Header -->
-        <header class="header">
-            <h1>Polygon Drawer</h1>
-            <button id="menu-toggle" class="btn-icon" aria-label="Menu">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="1"></circle>
-                    <circle cx="12" cy="5" r="1"></circle>
-                    <circle cx="12" cy="19" r="1"></circle>
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="M21 21l-4.35-4.35"></path>
                 </svg>
-            </button>
-        </header>
+                <input type="text" id="search-input" placeholder="Search location" autocomplete="off">
+                <button id="search-clear" class="search-clear hidden" aria-label="Clear">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.3)"/>
+                        <path d="M15 9l-6 6M9 9l6 6" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="search-results" class="search-results hidden"></div>
+        </div>
 
         <!-- Map Container -->
         <div id="map"></div>
 
         <!-- Info Panel -->
         <div id="info-panel" class="info-panel">
-            <div class="info-content">
-                <span id="area-display">Draw a polygon to see area</span>
-            </div>
+            <span id="area-display">Tap Draw to start</span>
+        </div>
+
+        <!-- Floating Action Buttons -->
+        <div class="fab-container">
+            <button id="locate-btn" class="fab" title="My Location">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
+                    <circle cx="12" cy="12" r="7"/>
+                    <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                </svg>
+            </button>
+            <button id="style-btn" class="fab" title="Map Style">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <path d="M3 9h18M9 21V9"/>
+                </svg>
+            </button>
         </div>
 
         <!-- Bottom Toolbar -->
         <div class="toolbar">
-            <button id="locate-btn" class="toolbar-btn" title="Find my location">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
-                </svg>
-                <span>Locate</span>
-            </button>
-            <button id="draw-btn" class="toolbar-btn active" title="Draw polygon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"></polygon>
+            <button id="draw-btn" class="toolbar-btn" title="Draw polygon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 3l9 5.5v7L12 21l-9-5.5v-7L12 3z"/>
                 </svg>
                 <span>Draw</span>
             </button>
             <button id="clear-btn" class="toolbar-btn" title="Clear all">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
                 </svg>
                 <span>Clear</span>
             </button>
-            <button id="export-btn" class="toolbar-btn" title="Export GeoJSON">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
+            <button id="copy-btn" class="toolbar-btn" title="Copy GeoJSON">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
                 </svg>
-                <span>Export</span>
+                <span>Copy</span>
             </button>
-        </div>
-
-        <!-- Dropdown Menu -->
-        <div id="dropdown-menu" class="dropdown-menu hidden">
-            <button id="change-style-btn" class="dropdown-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="9" y1="21" x2="9" y2="9"></line>
-                </svg>
-                <span>Change Map Style</span>
-            </button>
-            <button id="help-btn" class="dropdown-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            <button id="help-btn" class="toolbar-btn" title="Help">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9 9a3 3 0 115.83 1c0 2-3 3-3 3M12 17h.01"/>
                 </svg>
                 <span>Help</span>
             </button>
@@ -99,27 +99,63 @@
 
         <!-- Help Modal -->
         <div id="help-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>How to Use</h2>
-                    <button class="modal-close" aria-label="Close">&times;</button>
+                    <button class="modal-close" aria-label="Close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.1)"/>
+                            <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <div class="help-section">
-                        <h3>Drawing a Polygon</h3>
-                        <p>Tap the <strong>Draw</strong> button, then tap on the map to place points. Tap the first point again or double-tap to complete the polygon.</p>
+                    <div class="help-item">
+                        <div class="help-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Search</h3>
+                            <p>Type any location to fly there instantly.</p>
+                        </div>
                     </div>
-                    <div class="help-section">
-                        <h3>Editing</h3>
-                        <p>Tap on a polygon to select it. Drag vertices to adjust the shape. Tap outside to deselect.</p>
+                    <div class="help-item">
+                        <div class="help-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3l9 5.5v7L12 21l-9-5.5v-7L12 3z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Draw</h3>
+                            <p>Tap points on the map. Double-tap to finish.</p>
+                        </div>
                     </div>
-                    <div class="help-section">
-                        <h3>Location</h3>
-                        <p>Tap <strong>Locate</strong> to zoom to your current position. You may need to allow location access.</p>
+                    <div class="help-item">
+                        <div class="help-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Copy</h3>
+                            <p>Copies your polygons as GeoJSON to clipboard.</p>
+                        </div>
                     </div>
-                    <div class="help-section">
-                        <h3>Export</h3>
-                        <p>Tap <strong>Export</strong> to download your polygons as a GeoJSON file.</p>
+                    <div class="help-item">
+                        <div class="help-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
+                                <circle cx="12" cy="12" r="7"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Locate</h3>
+                            <p>Jump to your current location.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,12 +163,18 @@
 
         <!-- Map Style Modal -->
         <div id="style-modal" class="modal hidden">
-            <div class="modal-content">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content modal-compact">
                 <div class="modal-header">
                     <h2>Map Style</h2>
-                    <button class="modal-close" aria-label="Close">&times;</button>
+                    <button class="modal-close" aria-label="Close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.1)"/>
+                            <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                 </div>
-                <div class="modal-body style-options">
+                <div class="modal-body style-grid">
                     <button class="style-option active" data-style="satellite-streets-v12">
                         <div class="style-preview satellite"></div>
                         <span>Satellite</span>
@@ -153,7 +195,7 @@
             </div>
         </div>
 
-        <!-- Toast notifications -->
+        <!-- Toast -->
         <div id="toast" class="toast hidden"></div>
     </div>
 

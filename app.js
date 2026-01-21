@@ -1,70 +1,54 @@
 /**
- * Polygon Map Drawer
- * A mobile-first web app for drawing polygons on satellite maps
+ * Polygon Drawer
+ * A mobile-friendly map app for drawing polygons
  */
 
 (function() {
     'use strict';
 
-    // ========================================
-    // Configuration
-    // ========================================
     const CONFIG = {
-        // Mapbox API Key
         embeddedApiKey: 'pk.eyJ1Ijoic3VtdGluZyIsImEiOiJja3licjF4NXEwaHc2MnFvODJkOXp5M2ZkIn0.-WciZf0vNJTZcJ2vxueTQg',
-
-        defaultCenter: [4.9041, 52.3676], // Amsterdam
+        defaultCenter: [4.9041, 52.3676],
         defaultZoom: 12,
         drawStorageKey: 'polygon-drawer-data',
         styleStorageKey: 'polygon-drawer-style',
         defaultStyle: 'satellite-streets-v12'
     };
 
-    // ========================================
-    // State
-    // ========================================
     let map = null;
     let draw = null;
     let currentStyle = CONFIG.defaultStyle;
     let locationMarker = null;
+    let searchTimeout = null;
 
-    // ========================================
-    // DOM Elements
-    // ========================================
     const elements = {
         app: document.getElementById('app'),
-        mapContainer: document.getElementById('map'),
+        searchInput: document.getElementById('search-input'),
+        searchClear: document.getElementById('search-clear'),
+        searchResults: document.getElementById('search-results'),
         areaDisplay: document.getElementById('area-display'),
-        menuToggle: document.getElementById('menu-toggle'),
-        dropdownMenu: document.getElementById('dropdown-menu'),
         locateBtn: document.getElementById('locate-btn'),
+        styleBtn: document.getElementById('style-btn'),
         drawBtn: document.getElementById('draw-btn'),
         clearBtn: document.getElementById('clear-btn'),
-        exportBtn: document.getElementById('export-btn'),
-        changeStyleBtn: document.getElementById('change-style-btn'),
+        copyBtn: document.getElementById('copy-btn'),
         helpBtn: document.getElementById('help-btn'),
         helpModal: document.getElementById('help-modal'),
         styleModal: document.getElementById('style-modal'),
         toast: document.getElementById('toast')
     };
 
-    // ========================================
     // Utility Functions
-    // ========================================
-
-    function showToast(message, type = 'info', duration = 3000) {
+    function showToast(message, type = 'info', duration = 2500) {
         elements.toast.textContent = message;
         elements.toast.className = `toast ${type}`;
         elements.toast.classList.remove('hidden');
-
-        setTimeout(() => {
-            elements.toast.classList.add('hidden');
-        }, duration);
+        setTimeout(() => elements.toast.classList.add('hidden'), duration);
     }
 
     function formatArea(sqMeters) {
         if (sqMeters < 10000) {
-            return `${sqMeters.toFixed(1)} m²`;
+            return `${sqMeters.toFixed(0)} m²`;
         } else if (sqMeters < 1000000) {
             return `${(sqMeters / 10000).toFixed(2)} ha`;
         } else {
@@ -100,10 +84,71 @@
         }
     }
 
-    // ========================================
-    // Map Initialization
-    // ========================================
+    // Search Functionality
+    async function searchLocation(query) {
+        if (!query || query.length < 2) {
+            elements.searchResults.classList.add('hidden');
+            return;
+        }
 
+        try {
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${CONFIG.embeddedApiKey}&limit=5`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.features && data.features.length > 0) {
+                renderSearchResults(data.features);
+            } else {
+                elements.searchResults.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            elements.searchResults.classList.add('hidden');
+        }
+    }
+
+    function renderSearchResults(features) {
+        elements.searchResults.innerHTML = features.map(feature => {
+            const name = feature.text || feature.place_name.split(',')[0];
+            const detail = feature.place_name;
+            return `
+                <div class="search-result" data-lng="${feature.center[0]}" data-lat="${feature.center[1]}" data-name="${name}">
+                    <div class="search-result-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="search-result-text">
+                        <div class="search-result-name">${name}</div>
+                        <div class="search-result-detail">${detail}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        elements.searchResults.classList.remove('hidden');
+    }
+
+    function selectSearchResult(lng, lat, name) {
+        elements.searchInput.value = name;
+        elements.searchResults.classList.add('hidden');
+        elements.searchClear.classList.remove('hidden');
+
+        map.flyTo({
+            center: [lng, lat],
+            zoom: 15,
+            duration: 1500
+        });
+    }
+
+    function clearSearch() {
+        elements.searchInput.value = '';
+        elements.searchResults.classList.add('hidden');
+        elements.searchClear.classList.add('hidden');
+    }
+
+    // Map Initialization
     function initMap(accessToken) {
         mapboxgl.accessToken = accessToken;
         currentStyle = getStoredStyle();
@@ -115,15 +160,18 @@
                 center: CONFIG.defaultCenter,
                 zoom: CONFIG.defaultZoom,
                 attributionControl: true,
-                pitchWithRotate: false
+                pitchWithRotate: false,
+                touchZoomRotate: true,
+                dragRotate: false
             });
+
+            // Enable touch gestures
+            map.touchZoomRotate.enableRotation();
+            map.scrollZoom.enable();
 
             map.on('load', () => {
                 initDraw();
-                elements.app.classList.remove('hidden');
-                // Ensure map fills container after becoming visible
                 setTimeout(() => map.resize(), 100);
-                showToast('Map loaded successfully', 'success');
             });
 
             map.on('error', (e) => {
@@ -132,13 +180,12 @@
                 }
             });
 
-            // Add zoom controls
+            // Add zoom controls (hidden on mobile via CSS if needed)
             map.addControl(new mapboxgl.NavigationControl({
-                showCompass: true,
+                showCompass: false,
                 showZoom: true
             }), 'bottom-right');
 
-            // Add scale
             map.addControl(new mapboxgl.ScaleControl({
                 maxWidth: 100,
                 unit: 'metric'
@@ -146,113 +193,81 @@
 
         } catch (error) {
             console.error('Map initialization error:', error);
-            showToast('Failed to initialize map', 'error');
+            showToast('Failed to load map', 'error');
         }
     }
 
     function initDraw() {
-        // Custom draw styles
         const drawStyles = [
-            // Polygon fill
             {
                 'id': 'gl-draw-polygon-fill',
                 'type': 'fill',
                 'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
                 'paint': {
-                    'fill-color': '#4f46e5',
-                    'fill-outline-color': '#4f46e5',
-                    'fill-opacity': 0.2
+                    'fill-color': '#0a84ff',
+                    'fill-outline-color': '#0a84ff',
+                    'fill-opacity': 0.15
                 }
             },
-            // Polygon outline
             {
                 'id': 'gl-draw-polygon-stroke-active',
                 'type': 'line',
                 'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
-                'layout': {
-                    'line-cap': 'round',
-                    'line-join': 'round'
-                },
-                'paint': {
-                    'line-color': '#4f46e5',
-                    'line-width': 3
-                }
+                'layout': { 'line-cap': 'round', 'line-join': 'round' },
+                'paint': { 'line-color': '#0a84ff', 'line-width': 3 }
             },
-            // Vertex points
             {
                 'id': 'gl-draw-polygon-and-line-vertex-active',
                 'type': 'circle',
                 'filter': ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
                 'paint': {
-                    'circle-radius': 8,
+                    'circle-radius': 7,
                     'circle-color': '#ffffff',
-                    'circle-stroke-color': '#4f46e5',
+                    'circle-stroke-color': '#0a84ff',
                     'circle-stroke-width': 3
                 }
             },
-            // Midpoints
             {
                 'id': 'gl-draw-polygon-midpoint',
                 'type': 'circle',
                 'filter': ['all', ['==', 'meta', 'midpoint'], ['==', '$type', 'Point']],
                 'paint': {
                     'circle-radius': 5,
-                    'circle-color': '#4f46e5',
+                    'circle-color': '#0a84ff',
                     'circle-stroke-color': '#ffffff',
                     'circle-stroke-width': 2
                 }
             },
-            // Line during drawing
             {
                 'id': 'gl-draw-line',
                 'type': 'line',
                 'filter': ['all', ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
-                'layout': {
-                    'line-cap': 'round',
-                    'line-join': 'round'
-                },
-                'paint': {
-                    'line-color': '#4f46e5',
-                    'line-dasharray': [2, 2],
-                    'line-width': 3
-                }
+                'layout': { 'line-cap': 'round', 'line-join': 'round' },
+                'paint': { 'line-color': '#0a84ff', 'line-dasharray': [2, 2], 'line-width': 2 }
             },
-            // Points during drawing
             {
                 'id': 'gl-draw-point',
                 'type': 'circle',
                 'filter': ['all', ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
                 'paint': {
-                    'circle-radius': 8,
+                    'circle-radius': 7,
                     'circle-color': '#ffffff',
-                    'circle-stroke-color': '#4f46e5',
+                    'circle-stroke-color': '#0a84ff',
                     'circle-stroke-width': 3
                 }
             },
-            // Static polygon fill
             {
                 'id': 'gl-draw-polygon-fill-static',
                 'type': 'fill',
                 'filter': ['all', ['==', '$type', 'Polygon'], ['==', 'mode', 'static']],
-                'paint': {
-                    'fill-color': '#10b981',
-                    'fill-outline-color': '#10b981',
-                    'fill-opacity': 0.2
-                }
+                'paint': { 'fill-color': '#30d158', 'fill-outline-color': '#30d158', 'fill-opacity': 0.15 }
             },
-            // Static polygon outline
             {
                 'id': 'gl-draw-polygon-stroke-static',
                 'type': 'line',
                 'filter': ['all', ['==', '$type', 'Polygon'], ['==', 'mode', 'static']],
-                'layout': {
-                    'line-cap': 'round',
-                    'line-join': 'round'
-                },
-                'paint': {
-                    'line-color': '#10b981',
-                    'line-width': 3
-                }
+                'layout': { 'line-cap': 'round', 'line-join': 'round' },
+                'paint': { 'line-color': '#30d158', 'line-width': 3 }
             }
         ];
 
@@ -267,13 +282,11 @@
 
         map.addControl(draw);
 
-        // Event listeners
         map.on('draw.create', handleDrawUpdate);
         map.on('draw.update', handleDrawUpdate);
         map.on('draw.delete', handleDrawUpdate);
         map.on('draw.selectionchange', handleSelectionChange);
 
-        // Load any saved data
         loadDrawData();
     }
 
@@ -284,7 +297,6 @@
 
     function handleSelectionChange(e) {
         if (e.features.length > 0) {
-            // A feature is selected
             elements.drawBtn.classList.remove('active');
         }
     }
@@ -293,7 +305,7 @@
         const data = draw.getAll();
 
         if (data.features.length === 0) {
-            elements.areaDisplay.textContent = 'Draw a polygon to see area';
+            elements.areaDisplay.textContent = 'Tap Draw to start';
             return;
         }
 
@@ -313,63 +325,47 @@
         }
     }
 
-    // ========================================
-    // Toolbar Actions
-    // ========================================
-
+    // Actions
     function handleLocate() {
         if (!navigator.geolocation) {
-            showToast('Geolocation not supported', 'error');
+            showToast('Location not supported', 'error');
             return;
         }
 
-        showToast('Finding your location...');
+        showToast('Finding location...');
+        elements.locateBtn.classList.add('active');
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { longitude, latitude } = position.coords;
 
-                // Remove existing marker
-                if (locationMarker) {
-                    locationMarker.remove();
-                }
+                if (locationMarker) locationMarker.remove();
 
-                // Add marker at location
                 const el = document.createElement('div');
                 el.className = 'location-marker';
                 locationMarker = new mapboxgl.Marker(el)
                     .setLngLat([longitude, latitude])
                     .addTo(map);
 
-                // Fly to location
                 map.flyTo({
                     center: [longitude, latitude],
                     zoom: 16,
-                    duration: 2000
+                    duration: 1500
                 });
 
+                elements.locateBtn.classList.remove('active');
                 showToast('Location found', 'success');
             },
             (error) => {
-                let message = 'Unable to get location';
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        message = 'Location permission denied';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        message = 'Location unavailable';
-                        break;
-                    case error.TIMEOUT:
-                        message = 'Location request timed out';
-                        break;
-                }
-                showToast(message, 'error');
+                elements.locateBtn.classList.remove('active');
+                const messages = {
+                    1: 'Location access denied',
+                    2: 'Location unavailable',
+                    3: 'Location timeout'
+                };
+                showToast(messages[error.code] || 'Location error', 'error');
             },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
 
@@ -377,7 +373,7 @@
         if (draw) {
             draw.changeMode('draw_polygon');
             elements.drawBtn.classList.add('active');
-            showToast('Tap map to draw polygon');
+            showToast('Tap to add points');
         }
     }
 
@@ -388,26 +384,24 @@
                 showToast('Nothing to clear');
                 return;
             }
-
             draw.deleteAll();
             updateAreaDisplay();
             saveDrawData();
-            showToast('All drawings cleared');
+            showToast('Cleared');
         }
     }
 
-    function handleExport() {
+    async function handleCopy() {
         if (!draw) return;
 
         const data = draw.getAll();
         const polygons = data.features.filter(f => f.geometry.type === 'Polygon');
 
         if (polygons.length === 0) {
-            showToast('No polygons to export', 'error');
+            showToast('No polygons to copy', 'error');
             return;
         }
 
-        // Create clean GeoJSON
         const geojson = {
             type: 'FeatureCollection',
             features: polygons.map((feature, index) => ({
@@ -421,23 +415,26 @@
             }))
         };
 
-        // Download file
-        const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `polygon-${new Date().toISOString().slice(0, 10)}.geojson`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        showToast(`Exported ${polygons.length} polygon(s)`, 'success');
+        try {
+            await navigator.clipboard.writeText(JSON.stringify(geojson, null, 2));
+            showToast('Copied to clipboard', 'success');
+        } catch (err) {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = JSON.stringify(geojson, null, 2);
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Copied to clipboard', 'success');
+            } catch (e) {
+                showToast('Failed to copy', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
     }
-
-    // ========================================
-    // Map Style
-    // ========================================
 
     function changeMapStyle(styleName) {
         if (!map) return;
@@ -445,15 +442,12 @@
         currentStyle = styleName;
         setStoredStyle(styleName);
 
-        // Save current drawings
         const currentData = draw ? draw.getAll() : null;
 
         map.setStyle(`mapbox://styles/mapbox/${styleName}`);
 
-        // Restore drawings after style loads
         map.once('style.load', () => {
             if (draw && currentData) {
-                // Need to re-add draw control after style change
                 map.removeControl(draw);
                 initDraw();
                 if (currentData.features.length > 0) {
@@ -462,124 +456,116 @@
             }
         });
 
-        // Update active style button
         document.querySelectorAll('.style-option').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.style === styleName);
         });
 
         elements.styleModal.classList.add('hidden');
-        showToast('Map style updated', 'success');
+        showToast('Style updated', 'success');
     }
 
-    // ========================================
     // Event Listeners
-    // ========================================
-
     function setupEventListeners() {
+        // Search
+        elements.searchInput.addEventListener('input', (e) => {
+            const value = e.target.value.trim();
+            elements.searchClear.classList.toggle('hidden', !value);
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => searchLocation(value), 300);
+        });
+
+        elements.searchInput.addEventListener('focus', () => {
+            if (elements.searchInput.value.trim()) {
+                searchLocation(elements.searchInput.value.trim());
+            }
+        });
+
+        elements.searchClear.addEventListener('click', clearSearch);
+
+        elements.searchResults.addEventListener('click', (e) => {
+            const result = e.target.closest('.search-result');
+            if (result) {
+                selectSearchResult(
+                    parseFloat(result.dataset.lng),
+                    parseFloat(result.dataset.lat),
+                    result.dataset.name
+                );
+            }
+        });
+
         // Toolbar buttons
         elements.locateBtn.addEventListener('click', handleLocate);
-        elements.drawBtn.addEventListener('click', handleDraw);
-        elements.clearBtn.addEventListener('click', handleClear);
-        elements.exportBtn.addEventListener('click', handleExport);
-
-        // Menu toggle
-        elements.menuToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            elements.dropdownMenu.classList.toggle('hidden');
-        });
-
-        // Dropdown items
-        elements.changeStyleBtn.addEventListener('click', () => {
-            elements.dropdownMenu.classList.add('hidden');
+        elements.styleBtn.addEventListener('click', () => {
             elements.styleModal.classList.remove('hidden');
         });
-
+        elements.drawBtn.addEventListener('click', handleDraw);
+        elements.clearBtn.addEventListener('click', handleClear);
+        elements.copyBtn.addEventListener('click', handleCopy);
         elements.helpBtn.addEventListener('click', () => {
-            elements.dropdownMenu.classList.add('hidden');
             elements.helpModal.classList.remove('hidden');
         });
 
         // Style options
         document.querySelectorAll('.style-option').forEach(btn => {
-            btn.addEventListener('click', () => {
-                changeMapStyle(btn.dataset.style);
-            });
+            btn.addEventListener('click', () => changeMapStyle(btn.dataset.style));
         });
 
-        // Modal close buttons
+        // Modal close
         document.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener('click', () => {
                 btn.closest('.modal').classList.add('hidden');
             });
         });
 
-        // Close modals on backdrop click
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                }
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.addEventListener('click', () => {
+                backdrop.closest('.modal').classList.add('hidden');
             });
         });
 
-        // Close dropdown on outside click
+        // Close search results on outside click
         document.addEventListener('click', (e) => {
-            if (!elements.dropdownMenu.contains(e.target) && !elements.menuToggle.contains(e.target)) {
-                elements.dropdownMenu.classList.add('hidden');
+            if (!e.target.closest('.search-container')) {
+                elements.searchResults.classList.add('hidden');
             }
         });
 
-        // Handle keyboard shortcuts
+        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // Escape to close modals
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal:not(.hidden)').forEach(modal => {
                     modal.classList.add('hidden');
                 });
-                elements.dropdownMenu.classList.add('hidden');
+                elements.searchResults.classList.add('hidden');
+                elements.searchInput.blur();
             }
 
-            // Shortcuts when map is active
+            // Don't trigger shortcuts when typing in search
+            if (document.activeElement === elements.searchInput) return;
+
             if (map && !document.querySelector('.modal:not(.hidden)')) {
-                if (e.key === 'd' || e.key === 'D') {
-                    handleDraw();
-                } else if (e.key === 'l' || e.key === 'L') {
-                    handleLocate();
-                } else if ((e.key === 'e' || e.key === 'E') && (e.ctrlKey || e.metaKey)) {
+                if (e.key === 'd' || e.key === 'D') handleDraw();
+                if (e.key === 'l' || e.key === 'L') handleLocate();
+                if ((e.key === 'c' || e.key === 'C') && (e.ctrlKey || e.metaKey)) {
                     e.preventDefault();
-                    handleExport();
+                    handleCopy();
                 }
             }
         });
-
-        // Prevent double-tap zoom on toolbar
-        elements.toolbar = document.querySelector('.toolbar');
-        let lastTouchEnd = 0;
-        elements.toolbar?.addEventListener('touchend', (e) => {
-            const now = Date.now();
-            if (now - lastTouchEnd <= 300) {
-                e.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, { passive: false });
     }
 
-    // ========================================
-    // Initialize App
-    // ========================================
-
+    // Initialize
     function init() {
         setupEventListeners();
         initMap(CONFIG.embeddedApiKey);
 
-        // Mark initial style as active
         const storedStyle = getStoredStyle();
         document.querySelectorAll('.style-option').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.style === storedStyle);
         });
     }
 
-    // Start app when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
