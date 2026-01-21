@@ -405,6 +405,13 @@ body {
     line-height: 1.4;
 }
 
+.permission-intro {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
 /* Toast */
 .toast {
     position: fixed;
