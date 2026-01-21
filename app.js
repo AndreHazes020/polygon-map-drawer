@@ -31,6 +31,7 @@
         copyBtn: document.getElementById('copy-btn'),
         helpBtn: document.getElementById('help-btn'),
         helpModal: document.getElementById('help-modal'),
+        locationModal: document.getElementById('location-modal'),
         toast: document.getElementById('toast')
     };
 
@@ -313,10 +314,23 @@
     }
 
     // Actions
-    function handleLocate() {
+    async function handleLocate() {
         if (!navigator.geolocation) {
             showToast('Location not supported', 'error');
             return;
+        }
+
+        // Check permission status first (if available)
+        if (navigator.permissions) {
+            try {
+                const permission = await navigator.permissions.query({ name: 'geolocation' });
+                if (permission.state === 'denied') {
+                    elements.locationModal.classList.remove('hidden');
+                    return;
+                }
+            } catch (e) {
+                // Permissions API not fully supported, continue with request
+            }
         }
 
         showToast('Finding location...');
@@ -345,12 +359,16 @@
             },
             (error) => {
                 elements.locateBtn.classList.remove('active');
-                const messages = {
-                    1: 'Location access denied',
-                    2: 'Location unavailable',
-                    3: 'Location timeout'
-                };
-                showToast(messages[error.code] || 'Location error', 'error');
+                if (error.code === 1) {
+                    // Permission denied - show help modal
+                    elements.locationModal.classList.remove('hidden');
+                } else {
+                    const messages = {
+                        2: 'Location unavailable',
+                        3: 'Location timeout'
+                    };
+                    showToast(messages[error.code] || 'Location error', 'error');
+                }
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
