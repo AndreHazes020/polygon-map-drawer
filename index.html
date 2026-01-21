@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="Draw polygons on a satellite map and export as GeoJSON">
+    <title>Polygon Map Drawer</title>
+
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
+
+    <!-- Mapbox Draw -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css" rel="stylesheet">
+
+    <!-- Turf.js for area calculation -->
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- API Key Modal -->
+    <div id="api-key-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome to Polygon Map Drawer</h2>
+            </div>
+            <div class="modal-body">
+                <p>To use this app, you need a Mapbox access token.</p>
+                <p class="hint">Get your free token at <a href="https://mapbox.com" target="_blank">mapbox.com</a></p>
+                <input type="text" id="api-key-input" placeholder="Enter your Mapbox access token">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="remember-key">
+                    <span>Remember on this device</span>
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button id="save-api-key" class="btn btn-primary">Get Started</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <!-- Header -->
+        <header class="header">
+            <h1>Polygon Drawer</h1>
+            <button id="menu-toggle" class="btn-icon" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"></circle>
+                    <circle cx="12" cy="5" r="1"></circle>
+                    <circle cx="12" cy="19" r="1"></circle>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Map Container -->
+        <div id="map"></div>
+
+        <!-- Info Panel -->
+        <div id="info-panel" class="info-panel">
+            <div class="info-content">
+                <span id="area-display">Draw a polygon to see area</span>
+            </div>
+        </div>
+
+        <!-- Bottom Toolbar -->
+        <div class="toolbar">
+            <button id="locate-btn" class="toolbar-btn" title="Find my location">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
+                </svg>
+                <span>Locate</span>
+            </button>
+            <button id="draw-btn" class="toolbar-btn active" title="Draw polygon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"></polygon>
+                </svg>
+                <span>Draw</span>
+            </button>
+            <button id="clear-btn" class="toolbar-btn" title="Clear all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Clear</span>
+            </button>
+            <button id="export-btn" class="toolbar-btn" title="Export GeoJSON">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export</span>
+            </button>
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div id="dropdown-menu" class="dropdown-menu hidden">
+            <button id="change-style-btn" class="dropdown-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
+                <span>Change Map Style</span>
+            </button>
+            <button id="change-key-btn" class="dropdown-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                </svg>
+                <span>Change API Key</span>
+            </button>
+            <button id="help-btn" class="dropdown-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <span>Help</span>
+            </button>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="help-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>How to Use</h2>
+                    <button class="modal-close" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-section">
+                        <h3>Drawing a Polygon</h3>
+                        <p>Tap the <strong>Draw</strong> button, then tap on the map to place points. Tap the first point again or double-tap to complete the polygon.</p>
+                    </div>
+                    <div class="help-section">
+                        <h3>Editing</h3>
+                        <p>Tap on a polygon to select it. Drag vertices to adjust the shape. Tap outside to deselect.</p>
+                    </div>
+                    <div class="help-section">
+                        <h3>Location</h3>
+                        <p>Tap <strong>Locate</strong> to zoom to your current position. You may need to allow location access.</p>
+                    </div>
+                    <div class="help-section">
+                        <h3>Export</h3>
+                        <p>Tap <strong>Export</strong> to download your polygons as a GeoJSON file.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Style Modal -->
+        <div id="style-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Map Style</h2>
+                    <button class="modal-close" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body style-options">
+                    <button class="style-option active" data-style="satellite-streets-v12">
+                        <div class="style-preview satellite"></div>
+                        <span>Satellite</span>
+                    </button>
+                    <button class="style-option" data-style="streets-v12">
+                        <div class="style-preview streets"></div>
+                        <span>Streets</span>
+                    </button>
+                    <button class="style-option" data-style="outdoors-v12">
+                        <div class="style-preview outdoors"></div>
+                        <span>Outdoors</span>
+                    </button>
+                    <button class="style-option" data-style="light-v11">
+                        <div class="style-preview light"></div>
+                        <span>Light</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast notifications -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
