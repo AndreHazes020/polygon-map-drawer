@@ -15,7 +15,6 @@
 
         defaultCenter: [4.9041, 52.3676], // Amsterdam
         defaultZoom: 12,
-        storageKey: 'polygon-drawer-mapbox-key',
         drawStorageKey: 'polygon-drawer-data',
         styleStorageKey: 'polygon-drawer-style',
         defaultStyle: 'satellite-streets-v12'
@@ -33,10 +32,6 @@
     // DOM Elements
     // ========================================
     const elements = {
-        apiKeyModal: document.getElementById('api-key-modal'),
-        apiKeyInput: document.getElementById('api-key-input'),
-        rememberKey: document.getElementById('remember-key'),
-        saveApiKeyBtn: document.getElementById('save-api-key'),
         app: document.getElementById('app'),
         mapContainer: document.getElementById('map'),
         areaDisplay: document.getElementById('area-display'),
@@ -47,7 +42,6 @@
         clearBtn: document.getElementById('clear-btn'),
         exportBtn: document.getElementById('export-btn'),
         changeStyleBtn: document.getElementById('change-style-btn'),
-        changeKeyBtn: document.getElementById('change-key-btn'),
         helpBtn: document.getElementById('help-btn'),
         helpModal: document.getElementById('help-modal'),
         styleModal: document.getElementById('style-modal'),
@@ -75,18 +69,6 @@
             return `${(sqMeters / 10000).toFixed(2)} ha`;
         } else {
             return `${(sqMeters / 1000000).toFixed(2)} km²`;
-        }
-    }
-
-    function getStoredApiKey() {
-        return localStorage.getItem(CONFIG.storageKey);
-    }
-
-    function setStoredApiKey(key, remember) {
-        if (remember) {
-            localStorage.setItem(CONFIG.storageKey, key);
-        } else {
-            sessionStorage.setItem(CONFIG.storageKey, key);
         }
     }
 
@@ -119,45 +101,6 @@
     }
 
     // ========================================
-    // API Key Management
-    // ========================================
-
-    function initApiKey() {
-        // Check for embedded key first (for public deployments)
-        if (CONFIG.embeddedApiKey && CONFIG.embeddedApiKey.startsWith('pk.')) {
-            initMap(CONFIG.embeddedApiKey);
-            return;
-        }
-
-        // Fall back to stored key
-        const storedKey = getStoredApiKey() || sessionStorage.getItem(CONFIG.storageKey);
-
-        if (storedKey) {
-            initMap(storedKey);
-        } else {
-            elements.apiKeyModal.classList.remove('hidden');
-        }
-    }
-
-    function handleSaveApiKey() {
-        const key = elements.apiKeyInput.value.trim();
-
-        if (!key) {
-            showToast('Please enter an API key', 'error');
-            return;
-        }
-
-        if (!key.startsWith('pk.')) {
-            showToast('Invalid key format. Should start with pk.', 'error');
-            return;
-        }
-
-        setStoredApiKey(key, elements.rememberKey.checked);
-        elements.apiKeyModal.classList.add('hidden');
-        initMap(key);
-    }
-
-    // ========================================
     // Map Initialization
     // ========================================
 
@@ -186,10 +129,6 @@
             map.on('error', (e) => {
                 if (e.error && e.error.status === 401) {
                     showToast('Invalid API key', 'error');
-                    elements.app.classList.add('hidden');
-                    elements.apiKeyModal.classList.remove('hidden');
-                    localStorage.removeItem(CONFIG.storageKey);
-                    sessionStorage.removeItem(CONFIG.storageKey);
                 }
             });
 
@@ -537,12 +476,6 @@
     // ========================================
 
     function setupEventListeners() {
-        // API Key modal
-        elements.saveApiKeyBtn.addEventListener('click', handleSaveApiKey);
-        elements.apiKeyInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSaveApiKey();
-        });
-
         // Toolbar buttons
         elements.locateBtn.addEventListener('click', handleLocate);
         elements.drawBtn.addEventListener('click', handleDraw);
@@ -559,20 +492,6 @@
         elements.changeStyleBtn.addEventListener('click', () => {
             elements.dropdownMenu.classList.add('hidden');
             elements.styleModal.classList.remove('hidden');
-        });
-
-        elements.changeKeyBtn.addEventListener('click', () => {
-            elements.dropdownMenu.classList.add('hidden');
-            localStorage.removeItem(CONFIG.storageKey);
-            sessionStorage.removeItem(CONFIG.storageKey);
-            elements.app.classList.add('hidden');
-            elements.apiKeyModal.classList.remove('hidden');
-            elements.apiKeyInput.value = '';
-            if (map) {
-                map.remove();
-                map = null;
-                draw = null;
-            }
         });
 
         elements.helpBtn.addEventListener('click', () => {
@@ -615,9 +534,7 @@
             // Escape to close modals
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal:not(.hidden)').forEach(modal => {
-                    if (modal !== elements.apiKeyModal || getStoredApiKey()) {
-                        modal.classList.add('hidden');
-                    }
+                    modal.classList.add('hidden');
                 });
                 elements.dropdownMenu.classList.add('hidden');
             }
@@ -653,12 +570,7 @@
 
     function init() {
         setupEventListeners();
-        initApiKey();
-
-        // Hide "Change API Key" option if using embedded key
-        if (CONFIG.embeddedApiKey && CONFIG.embeddedApiKey.startsWith('pk.')) {
-            elements.changeKeyBtn.classList.add('hidden');
-        }
+        initMap(CONFIG.embeddedApiKey);
 
         // Mark initial style as active
         const storedStyle = getStoredStyle();
