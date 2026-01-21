@@ -222,48 +222,6 @@ body {
     font-weight: 600;
 }
 
-/* FAB Container */
-.fab-container {
-    position: absolute;
-    right: 12px;
-    bottom: calc(var(--toolbar-height) + 80px + var(--safe-bottom));
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.fab {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-glass);
-    backdrop-filter: blur(var(--blur));
-    -webkit-backdrop-filter: blur(var(--blur));
-    border: 1px solid var(--separator);
-    border-radius: 50%;
-    color: var(--text-primary);
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-    transition: all 0.2s ease;
-}
-
-.fab:hover {
-    background: var(--bg-solid);
-    transform: scale(1.05);
-}
-
-.fab:active {
-    transform: scale(0.95);
-}
-
-.fab.active {
-    background: var(--accent);
-    border-color: var(--accent);
-}
-
 /* Toolbar */
 .toolbar {
     position: absolute;
@@ -445,63 +403,6 @@ body {
     font-size: 14px;
     color: var(--text-secondary);
     line-height: 1.4;
-}
-
-/* Style Grid */
-.style-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-}
-
-.style-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 12px;
-    background: var(--bg-elevated);
-    border: 2px solid transparent;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.style-option:hover {
-    background: var(--bg-tertiary);
-}
-
-.style-option.active {
-    border-color: var(--accent);
-    background: rgba(10, 132, 255, 0.15);
-}
-
-.style-preview {
-    width: 100%;
-    height: 56px;
-    border-radius: 8px;
-}
-
-.style-preview.satellite {
-    background: linear-gradient(145deg, #1a3d2d, #2d5a44, #1a4035);
-}
-
-.style-preview.streets {
-    background: linear-gradient(145deg, #e5e5ea, #f2f2f7, #d1d1d6);
-}
-
-.style-preview.outdoors {
-    background: linear-gradient(145deg, #8bc278, #5da048, #7ab86a);
-}
-
-.style-preview.light {
-    background: linear-gradient(145deg, #f5f5f7, #ffffff, #e8e8ed);
-}
-
-.style-option span {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
 }
 
 /* Toast */
