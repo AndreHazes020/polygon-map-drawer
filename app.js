@@ -618,7 +618,7 @@
             elements.searchClear.classList.toggle('hidden', !value);
 
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => searchLocation(value), 300);
+            searchTimeout = setTimeout(() => searchLocation(value), 150);
         });
 
         elements.searchInput.addEventListener('focus', () => {
