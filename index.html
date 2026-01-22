@@ -208,6 +208,23 @@
             </div>
         </div>
 
+        <!-- Copy Success Modal -->
+        <div id="copy-success-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content copy-success-content">
+                <div class="copy-success-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <h2>Polygon Copied!</h2>
+                <p class="copy-success-message">You have successfully copied your polygon. You will now be redirected back to the form where you can paste the GeoJSON.</p>
+                <p class="copy-countdown">Closing in <span id="countdown-timer">5</span> seconds...</p>
+                <button id="back-to-form-btn" class="back-to-form-btn">Back to Form</button>
+            </div>
+        </div>
+
         <!-- Toast -->
         <div id="toast" class="toast hidden"></div>
     </div>

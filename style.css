@@ -523,6 +523,72 @@ body {
     bottom: calc(var(--toolbar-height) + 16px + var(--safe-bottom)) !important;
 }
 
+/* Copy Success Modal */
+.copy-success-content {
+    text-align: center;
+    padding: 40px 30px;
+}
+
+.copy-success-icon {
+    margin-bottom: 20px;
+    animation: checkmarkPop 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes checkmarkPop {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.copy-success-content h2 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    color: var(--success);
+}
+
+.copy-success-message {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.copy-countdown {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    margin-bottom: 24px;
+}
+
+.copy-countdown span {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 16px;
+}
+
+.back-to-form-btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-to-form-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.back-to-form-btn:active {
+    transform: scale(0.98);
+}
+
 /* Desktop */
 @media (min-width: 768px) {
     .search-container {

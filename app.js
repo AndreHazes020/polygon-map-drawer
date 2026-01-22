@@ -32,8 +32,13 @@
         helpBtn: document.getElementById('help-btn'),
         helpModal: document.getElementById('help-modal'),
         locationModal: document.getElementById('location-modal'),
+        copySuccessModal: document.getElementById('copy-success-modal'),
+        countdownTimer: document.getElementById('countdown-timer'),
+        backToFormBtn: document.getElementById('back-to-form-btn'),
         toast: document.getElementById('toast')
     };
+
+    let copyCountdownInterval = null;
 
     // Utility Functions
     function showToast(message, type = 'info', duration = 2500) {
@@ -81,7 +86,22 @@
         }
 
         try {
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${CONFIG.embeddedApiKey}&limit=5`;
+            // Build URL with improved search parameters
+            const params = new URLSearchParams({
+                access_token: CONFIG.embeddedApiKey,
+                autocomplete: 'true',
+                fuzzyMatch: 'true',
+                limit: '10',
+                types: 'country,region,postcode,district,place,locality,neighborhood,address,poi'
+            });
+
+            // Add proximity bias based on current map center for more relevant results
+            if (map) {
+                const center = map.getCenter();
+                params.append('proximity', `${center.lng},${center.lat}`);
+            }
+
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${params.toString()}`;
             const response = await fetch(url);
             const data = await response.json();
 
@@ -89,6 +109,7 @@
                 renderSearchResults(data.features);
             } else {
                 elements.searchResults.classList.add('hidden');
+                showToast('No locations found', 'info');
             }
         } catch (error) {
             console.error('Search error:', error);
@@ -396,6 +417,58 @@
         }
     }
 
+    function showCopySuccessModal() {
+        // Clear any existing countdown
+        if (copyCountdownInterval) {
+            clearInterval(copyCountdownInterval);
+        }
+
+        let countdown = 5;
+        elements.countdownTimer.textContent = countdown;
+        elements.copySuccessModal.classList.remove('hidden');
+
+        // Start countdown
+        copyCountdownInterval = setInterval(() => {
+            countdown--;
+            elements.countdownTimer.textContent = countdown;
+
+            if (countdown <= 0) {
+                clearInterval(copyCountdownInterval);
+                closeTabOrShowMessage();
+            }
+        }, 1000);
+    }
+
+    function closeTabOrShowMessage() {
+        // Clear countdown if still running
+        if (copyCountdownInterval) {
+            clearInterval(copyCountdownInterval);
+            copyCountdownInterval = null;
+        }
+
+        // Try to close the tab/window
+        try {
+            window.close();
+            // If window.close() didn't work (e.g., not opened by script), update the message
+            setTimeout(() => {
+                // If we're still here, the close didn't work
+                elements.countdownTimer.parentElement.textContent = 'You can now close this tab manually.';
+                elements.backToFormBtn.textContent = 'Close Tab';
+            }, 100);
+        } catch (e) {
+            elements.countdownTimer.parentElement.textContent = 'You can now close this tab manually.';
+            elements.backToFormBtn.textContent = 'Close Tab';
+        }
+    }
+
+    function hideCopySuccessModal() {
+        if (copyCountdownInterval) {
+            clearInterval(copyCountdownInterval);
+            copyCountdownInterval = null;
+        }
+        elements.copySuccessModal.classList.add('hidden');
+    }
+
     async function handleCopy() {
         if (!draw) return;
 
@@ -420,9 +493,11 @@
             }))
         };
 
+        let copySuccess = false;
+
         try {
             await navigator.clipboard.writeText(JSON.stringify(geojson, null, 2));
-            showToast('Copied to clipboard', 'success');
+            copySuccess = true;
         } catch (err) {
             // Fallback for older browsers
             const textarea = document.createElement('textarea');
@@ -433,11 +508,15 @@
             textarea.select();
             try {
                 document.execCommand('copy');
-                showToast('Copied to clipboard', 'success');
+                copySuccess = true;
             } catch (e) {
                 showToast('Failed to copy', 'error');
             }
             document.body.removeChild(textarea);
+        }
+
+        if (copySuccess) {
+            showCopySuccessModal();
         }
     }
 
@@ -480,16 +559,29 @@
             elements.helpModal.classList.remove('hidden');
         });
 
+        // Back to form button in copy success modal
+        elements.backToFormBtn.addEventListener('click', closeTabOrShowMessage);
+
         // Modal close
         document.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener('click', () => {
-                btn.closest('.modal').classList.add('hidden');
+                const modal = btn.closest('.modal');
+                if (modal.id === 'copy-success-modal') {
+                    hideCopySuccessModal();
+                } else {
+                    modal.classList.add('hidden');
+                }
             });
         });
 
         document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
             backdrop.addEventListener('click', () => {
-                backdrop.closest('.modal').classList.add('hidden');
+                const modal = backdrop.closest('.modal');
+                if (modal.id === 'copy-success-modal') {
+                    hideCopySuccessModal();
+                } else {
+                    modal.classList.add('hidden');
+                }
             });
         });
 
@@ -504,7 +596,11 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal:not(.hidden)').forEach(modal => {
-                    modal.classList.add('hidden');
+                    if (modal.id === 'copy-success-modal') {
+                        hideCopySuccessModal();
+                    } else {
+                        modal.classList.add('hidden');
+                    }
                 });
                 elements.searchResults.classList.add('hidden');
                 elements.searchInput.blur();
