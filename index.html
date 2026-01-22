@@ -34,6 +34,9 @@
                         <path d="M21 21l-4.35-4.35"></path>
                     </svg>
                     <input type="text" id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search location" autocomplete="off">
+                    <div id="search-loading" class="search-loading hidden">
+                        <div class="search-spinner"></div>
+                    </div>
                     <button id="search-clear" class="search-clear hidden" aria-label="Clear">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.3)"/>
@@ -46,6 +49,7 @@
 
             <!-- Language Toggle -->
             <button id="lang-toggle" class="lang-toggle" title="Switch language">
+                <span class="lang-flag">🇬🇧</span>
                 <span class="lang-code">EN</span>
             </button>
         </div>

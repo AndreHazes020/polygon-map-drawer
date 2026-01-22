@@ -168,7 +168,9 @@
         backToFormBtn: document.getElementById('back-to-form-btn'),
         toast: document.getElementById('toast'),
         langToggle: document.getElementById('lang-toggle'),
-        langCode: document.querySelector('.lang-code')
+        langCode: document.querySelector('.lang-code'),
+        langFlag: document.querySelector('.lang-flag'),
+        searchLoading: document.getElementById('search-loading')
     };
 
     let copyCountdownInterval = null;
@@ -179,8 +181,9 @@
     }
 
     function applyTranslations() {
-        // Update lang code display
+        // Update lang code and flag display
         elements.langCode.textContent = currentLang.toUpperCase();
+        elements.langFlag.textContent = currentLang === 'en' ? '🇬🇧' : '🇳🇱';
         document.documentElement.lang = currentLang;
 
         // Update elements with data-i18n attribute (text content)
@@ -264,8 +267,12 @@
     async function searchLocation(query) {
         if (!query || query.length < 2) {
             elements.searchResults.classList.add('hidden');
+            elements.searchLoading.classList.add('hidden');
             return;
         }
+
+        // Show loading spinner
+        elements.searchLoading.classList.remove('hidden');
 
         try {
             // Search both Mapbox and Nominatim (OpenStreetMap) in parallel
@@ -273,6 +280,9 @@
                 searchMapbox(query),
                 searchNominatim(query)
             ]);
+
+            // Hide loading spinner
+            elements.searchLoading.classList.add('hidden');
 
             // Combine and deduplicate results
             const combined = combineSearchResults(mapboxResults, nominatimResults);
@@ -285,6 +295,7 @@
             }
         } catch (error) {
             console.error('Search error:', error);
+            elements.searchLoading.classList.add('hidden');
             elements.searchResults.classList.add('hidden');
         }
     }
@@ -428,6 +439,7 @@
         elements.searchInput.value = '';
         elements.searchResults.classList.add('hidden');
         elements.searchClear.classList.add('hidden');
+        elements.searchLoading.classList.add('hidden');
     }
 
     // Map Initialization
