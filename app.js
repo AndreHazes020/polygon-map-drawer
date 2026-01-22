@@ -78,7 +78,7 @@
         }
     }
 
-    // Search Functionality
+    // Search Functionality - uses both Mapbox and OpenStreetMap for better results
     async function searchLocation(query) {
         if (!query || query.length < 2) {
             elements.searchResults.classList.add('hidden');
@@ -86,27 +86,17 @@
         }
 
         try {
-            // Build URL with improved search parameters
-            const params = new URLSearchParams({
-                access_token: CONFIG.embeddedApiKey,
-                autocomplete: 'true',
-                fuzzyMatch: 'true',
-                limit: '10',
-                types: 'country,region,postcode,district,place,locality,neighborhood,address,poi'
-            });
+            // Search both Mapbox and Nominatim (OpenStreetMap) in parallel
+            const [mapboxResults, nominatimResults] = await Promise.all([
+                searchMapbox(query),
+                searchNominatim(query)
+            ]);
 
-            // Add proximity bias based on current map center for more relevant results
-            if (map) {
-                const center = map.getCenter();
-                params.append('proximity', `${center.lng},${center.lat}`);
-            }
+            // Combine and deduplicate results
+            const combined = combineSearchResults(mapboxResults, nominatimResults);
 
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${params.toString()}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.features && data.features.length > 0) {
-                renderSearchResults(data.features);
+            if (combined.length > 0) {
+                renderSearchResults(combined);
             } else {
                 elements.searchResults.classList.add('hidden');
                 showToast('No locations found', 'info');
@@ -117,21 +107,121 @@
         }
     }
 
-    function renderSearchResults(features) {
-        elements.searchResults.innerHTML = features.map(feature => {
-            const name = feature.text || feature.place_name.split(',')[0];
-            const detail = feature.place_name;
+    async function searchMapbox(query) {
+        try {
+            const params = new URLSearchParams({
+                access_token: CONFIG.embeddedApiKey,
+                autocomplete: 'true',
+                fuzzyMatch: 'true',
+                limit: '5',
+                types: 'country,region,postcode,district,place,locality,neighborhood,address,poi'
+            });
+
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${params.toString()}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.features && data.features.length > 0) {
+                return data.features.map(f => ({
+                    name: f.text || f.place_name.split(',')[0],
+                    detail: f.place_name,
+                    lng: f.center[0],
+                    lat: f.center[1],
+                    source: 'mapbox'
+                }));
+            }
+        } catch (e) {
+            console.warn('Mapbox search failed:', e);
+        }
+        return [];
+    }
+
+    async function searchNominatim(query) {
+        try {
+            const params = new URLSearchParams({
+                q: query,
+                format: 'json',
+                limit: '5',
+                addressdetails: '1'
+            });
+
+            const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                return data.map(item => ({
+                    name: item.name || item.display_name.split(',')[0],
+                    detail: item.display_name,
+                    lng: parseFloat(item.lon),
+                    lat: parseFloat(item.lat),
+                    source: 'osm'
+                }));
+            }
+        } catch (e) {
+            console.warn('Nominatim search failed:', e);
+        }
+        return [];
+    }
+
+    function combineSearchResults(mapboxResults, nominatimResults) {
+        const combined = [];
+        const seen = new Set();
+
+        // Helper to create a rough location key for deduplication
+        const getLocationKey = (result) => {
+            // Round to ~100m precision for deduplication
+            const latRound = Math.round(result.lat * 1000) / 1000;
+            const lngRound = Math.round(result.lng * 1000) / 1000;
+            return `${latRound},${lngRound}`;
+        };
+
+        // Interleave results, preferring Mapbox first but including OSM unique results
+        const maxResults = 10;
+        let mIdx = 0, nIdx = 0;
+
+        while (combined.length < maxResults && (mIdx < mapboxResults.length || nIdx < nominatimResults.length)) {
+            // Add from Mapbox
+            if (mIdx < mapboxResults.length) {
+                const result = mapboxResults[mIdx++];
+                const key = getLocationKey(result);
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    combined.push(result);
+                }
+            }
+
+            // Add from Nominatim
+            if (nIdx < nominatimResults.length && combined.length < maxResults) {
+                const result = nominatimResults[nIdx++];
+                const key = getLocationKey(result);
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    combined.push(result);
+                }
+            }
+        }
+
+        return combined;
+    }
+
+    function renderSearchResults(results) {
+        elements.searchResults.innerHTML = results.map(result => {
+            // Different icon for OSM vs Mapbox results
+            const iconColor = result.source === 'osm' ? '#30d158' : 'currentColor';
             return `
-                <div class="search-result" data-lng="${feature.center[0]}" data-lat="${feature.center[1]}" data-name="${name}">
+                <div class="search-result" data-lng="${result.lng}" data-lat="${result.lat}" data-name="${result.name}">
                     <div class="search-result-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
                             <circle cx="12" cy="10" r="3"/>
                         </svg>
                     </div>
                     <div class="search-result-text">
-                        <div class="search-result-name">${name}</div>
-                        <div class="search-result-detail">${detail}</div>
+                        <div class="search-result-name">${result.name}</div>
+                        <div class="search-result-detail">${result.detail}</div>
                     </div>
                 </div>
             `;
