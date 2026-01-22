@@ -149,6 +149,7 @@
     let draw = null;
     let locationMarker = null;
     let searchTimeout = null;
+    let currentSearchId = 0; // Track search requests to ignore stale results
 
     const elements = {
         app: document.getElementById('app'),
@@ -183,7 +184,8 @@
     function applyTranslations() {
         // Update lang code and flag display
         elements.langCode.textContent = currentLang.toUpperCase();
-        elements.langFlag.textContent = currentLang === 'en' ? '🇬🇧' : '🇳🇱';
+        // Use flag emojis: UK for English, Netherlands for Dutch
+        elements.langFlag.textContent = currentLang === 'nl' ? '\u{1F1F3}\u{1F1F1}' : '\u{1F1EC}\u{1F1E7}';
         document.documentElement.lang = currentLang;
 
         // Update elements with data-i18n attribute (text content)
@@ -271,8 +273,12 @@
             return;
         }
 
-        // Show loading spinner
+        // Increment search ID to track this request
+        const thisSearchId = ++currentSearchId;
+
+        // Show loading spinner and hide old results
         elements.searchLoading.classList.remove('hidden');
+        elements.searchResults.classList.add('hidden');
 
         try {
             // Search both Mapbox and Nominatim (OpenStreetMap) in parallel
@@ -280,6 +286,11 @@
                 searchMapbox(query),
                 searchNominatim(query)
             ]);
+
+            // Ignore results if a newer search has started
+            if (thisSearchId !== currentSearchId) {
+                return;
+            }
 
             // Hide loading spinner
             elements.searchLoading.classList.add('hidden');
@@ -294,6 +305,10 @@
                 showToast(t('noLocationsFound'), 'info');
             }
         } catch (error) {
+            // Ignore errors from stale searches
+            if (thisSearchId !== currentSearchId) {
+                return;
+            }
             console.error('Search error:', error);
             elements.searchLoading.classList.add('hidden');
             elements.searchResults.classList.add('hidden');
@@ -812,7 +827,7 @@
             elements.searchClear.classList.toggle('hidden', !value);
 
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => searchLocation(value), 150);
+            searchTimeout = setTimeout(() => searchLocation(value), 300);
         });
 
         elements.searchInput.addEventListener('focus', () => {
