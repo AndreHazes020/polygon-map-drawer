@@ -112,10 +112,15 @@ body {
     transform: scale(0.95);
 }
 
+.lang-flag {
+    font-size: 18px;
+    line-height: 1;
+}
+
 .lang-code {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     letter-spacing: 0.02em;
 }
 
@@ -175,6 +180,27 @@ body {
 
 .search-clear:hover {
     opacity: 1;
+}
+
+.search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+.search-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--separator);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 .search-results {
