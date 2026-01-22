@@ -423,7 +423,7 @@
             clearInterval(copyCountdownInterval);
         }
 
-        let countdown = 5;
+        let countdown = 10;
         elements.countdownTimer.textContent = countdown;
         elements.copySuccessModal.classList.remove('hidden');
 
