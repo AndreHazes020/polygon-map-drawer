@@ -101,7 +101,16 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p class="permission-intro">To use your current location, please enable location access in your browser settings.</p>
+                    <p class="permission-intro">Location access is blocked. You can either enable it in your browser settings, or use the <strong>Search bar</strong> to find your restoration site.</p>
+
+                    <div class="help-note" style="margin-top: 0; margin-bottom: 16px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <p><strong>Alternative:</strong> Close this and use the search bar at the top to find your location by name.</p>
+                    </div>
+
+                    <p class="permission-intro" style="margin-bottom: 12px; font-size: 13px; color: var(--text-tertiary);">To enable location access:</p>
 
                     <div class="help-item">
                         <div class="help-icon">
@@ -158,49 +167,32 @@
                 </div>
                 <div class="modal-body">
                     <div class="help-item">
-                        <div class="help-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-                            </svg>
-                        </div>
+                        <div class="help-step">1</div>
                         <div>
-                            <h3>Search</h3>
-                            <p>Type any location to fly there instantly.</p>
+                            <h3>Find Your Location</h3>
+                            <p>Tap <strong>Locate</strong> to jump to your current position, or use the <strong>Search bar</strong> to find your restoration site.</p>
                         </div>
                     </div>
                     <div class="help-item">
-                        <div class="help-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 3l9 5.5v7L12 21l-9-5.5v-7L12 3z"/>
-                            </svg>
-                        </div>
+                        <div class="help-step">2</div>
                         <div>
-                            <h3>Draw</h3>
-                            <p>Tap points on the map. Double-tap to finish.</p>
+                            <h3>Draw the Restoration Area</h3>
+                            <p>Tap <strong>Draw</strong>, then tap points around your restoration area. Connect the last point to the first to close the shape.</p>
                         </div>
                     </div>
                     <div class="help-item">
-                        <div class="help-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 6L9 17l-5-5"/>
-                            </svg>
-                        </div>
+                        <div class="help-step">3</div>
                         <div>
-                            <h3>Finish</h3>
-                            <p>Copies your polygons as GeoJSON and returns to form.</p>
+                            <h3>Finish & Return</h3>
+                            <p>Tap <strong>Finish</strong> to copy the polygon data and return to the form where you can paste it.</p>
                         </div>
                     </div>
-                    <div class="help-item">
-                        <div class="help-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
-                                <circle cx="12" cy="12" r="7"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3>Locate</h3>
-                            <p>Jump to your current location.</p>
-                        </div>
+                    <div class="help-note">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <p>Made a mistake? Tap <strong>Clear</strong> to remove all drawings and start over.</p>
                     </div>
                 </div>
             </div>
