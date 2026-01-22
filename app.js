@@ -11,8 +11,139 @@
         defaultCenter: [4.9041, 52.3676],
         defaultZoom: 12,
         drawStorageKey: 'polygon-drawer-data',
-        mapStyle: 'satellite-streets-v12'
+        mapStyle: 'satellite-streets-v12',
+        langStorageKey: 'polygon-drawer-lang'
     };
+
+    // Translations
+    const translations = {
+        en: {
+            // Search
+            searchPlaceholder: 'Search location',
+            noLocationsFound: 'No locations found',
+
+            // Toolbar buttons
+            locate: 'Locate',
+            draw: 'Draw',
+            clear: 'Clear',
+            finish: 'Finish',
+            help: 'Help',
+            locateTitle: 'My Location',
+            drawTitle: 'Draw polygon',
+            clearTitle: 'Clear all',
+            finishTitle: 'Finish and copy GeoJSON',
+            helpTitle: 'Help',
+
+            // Info panel
+            tapToStart: 'Tap Draw to start',
+            area: 'Area',
+
+            // Location modal
+            enableLocation: 'Enable Location',
+            locationBlocked: 'Location access is blocked. You can either enable it in your browser settings, or use the <strong>Search bar</strong> to find your restoration site.',
+            locationAlternative: '<strong>Alternative:</strong> Close this and use the search bar at the top to find your location by name.',
+            toEnableLocation: 'To enable location access:',
+            iosInstructions: 'Settings → Safari → Location → Allow',
+            androidInstructions: 'Tap the lock icon in browser → Permissions → Location → Allow',
+            desktopInstructions: 'Click the lock/info icon in the address bar → Location → Allow',
+
+            // Help modal
+            howToUse: 'How to Use',
+            helpStep1Title: 'Find Your Location',
+            helpStep1Desc: 'Tap <strong>Locate</strong> to jump to your current position, or use the <strong>Search bar</strong> to find your restoration site.',
+            helpStep2Title: 'Draw the Restoration Area',
+            helpStep2Desc: 'Tap <strong>Draw</strong>, then tap points around your restoration area. Connect the last point to the first to close the shape.',
+            helpStep3Title: 'Finish & Return',
+            helpStep3Desc: 'Tap <strong>Finish</strong> to copy the polygon data and return to the form where you can paste it.',
+            helpNote: 'Made a mistake? Tap <strong>Clear</strong> to remove all drawings and start over.',
+
+            // Copy success modal
+            polygonCopied: 'Polygon Copied!',
+            copySuccessMessage: 'You have successfully copied your polygon. You will now be redirected back to the form where you can paste the GeoJSON.',
+            closingIn: 'Closing in',
+            seconds: 'seconds',
+            backToForm: 'Back to Form',
+            closeTabManually: 'You can now close this tab manually.',
+            closeTab: 'Close Tab',
+
+            // Toast messages
+            locationNotSupported: 'Location not supported',
+            findingLocation: 'Finding location...',
+            locationFound: 'Location found',
+            locationUnavailable: 'Location unavailable',
+            locationTimeout: 'Location timeout',
+            locationError: 'Location error',
+            noPolygonsToCopy: 'No polygons to copy',
+            failedToCopy: 'Failed to copy',
+            clearedAll: 'Cleared all',
+            nothingToClear: 'Nothing to clear',
+            tapToAddPoints: 'Tap to add points'
+        },
+        nl: {
+            // Search
+            searchPlaceholder: 'Zoek locatie',
+            noLocationsFound: 'Geen locaties gevonden',
+
+            // Toolbar buttons
+            locate: 'Locatie',
+            draw: 'Teken',
+            clear: 'Wissen',
+            finish: 'Klaar',
+            help: 'Help',
+            locateTitle: 'Mijn Locatie',
+            drawTitle: 'Teken polygoon',
+            clearTitle: 'Alles wissen',
+            finishTitle: 'Klaar en kopieer GeoJSON',
+            helpTitle: 'Help',
+
+            // Info panel
+            tapToStart: 'Tik op Teken om te starten',
+            area: 'Oppervlakte',
+
+            // Location modal
+            enableLocation: 'Locatie Inschakelen',
+            locationBlocked: 'Locatietoegang is geblokkeerd. Je kunt dit inschakelen in je browserinstellingen, of gebruik de <strong>Zoekbalk</strong> om je herstellocatie te vinden.',
+            locationAlternative: '<strong>Alternatief:</strong> Sluit dit en gebruik de zoekbalk bovenaan om je locatie op naam te vinden.',
+            toEnableLocation: 'Om locatietoegang in te schakelen:',
+            iosInstructions: 'Instellingen → Safari → Locatie → Toestaan',
+            androidInstructions: 'Tik op het slotje in de browser → Machtigingen → Locatie → Toestaan',
+            desktopInstructions: 'Klik op het slot/info-icoon in de adresbalk → Locatie → Toestaan',
+
+            // Help modal
+            howToUse: 'Gebruiksaanwijzing',
+            helpStep1Title: 'Vind Je Locatie',
+            helpStep1Desc: 'Tik op <strong>Locatie</strong> om naar je huidige positie te gaan, of gebruik de <strong>Zoekbalk</strong> om je herstellocatie te vinden.',
+            helpStep2Title: 'Teken het Herstelgebied',
+            helpStep2Desc: 'Tik op <strong>Teken</strong>, tik dan punten rondom je herstelgebied. Verbind het laatste punt met het eerste om de vorm te sluiten.',
+            helpStep3Title: 'Klaar & Terug',
+            helpStep3Desc: 'Tik op <strong>Klaar</strong> om de polygoongegevens te kopiëren en terug te keren naar het formulier waar je het kunt plakken.',
+            helpNote: 'Foutje gemaakt? Tik op <strong>Wissen</strong> om alle tekeningen te verwijderen en opnieuw te beginnen.',
+
+            // Copy success modal
+            polygonCopied: 'Polygoon Gekopieerd!',
+            copySuccessMessage: 'Je hebt je polygoon succesvol gekopieerd. Je wordt nu teruggeleid naar het formulier waar je de GeoJSON kunt plakken.',
+            closingIn: 'Sluit over',
+            seconds: 'seconden',
+            backToForm: 'Terug naar Formulier',
+            closeTabManually: 'Je kunt dit tabblad nu handmatig sluiten.',
+            closeTab: 'Sluit Tabblad',
+
+            // Toast messages
+            locationNotSupported: 'Locatie niet ondersteund',
+            findingLocation: 'Locatie zoeken...',
+            locationFound: 'Locatie gevonden',
+            locationUnavailable: 'Locatie niet beschikbaar',
+            locationTimeout: 'Locatie timeout',
+            locationError: 'Locatiefout',
+            noPolygonsToCopy: 'Geen polygonen om te kopiëren',
+            failedToCopy: 'Kopiëren mislukt',
+            clearedAll: 'Alles gewist',
+            nothingToClear: 'Niets om te wissen',
+            tapToAddPoints: 'Tik om punten toe te voegen'
+        }
+    };
+
+    let currentLang = localStorage.getItem(CONFIG.langStorageKey) || 'en';
 
     let map = null;
     let draw = null;
@@ -35,10 +166,61 @@
         copySuccessModal: document.getElementById('copy-success-modal'),
         countdownTimer: document.getElementById('countdown-timer'),
         backToFormBtn: document.getElementById('back-to-form-btn'),
-        toast: document.getElementById('toast')
+        toast: document.getElementById('toast'),
+        langToggle: document.getElementById('lang-toggle'),
+        langCode: document.querySelector('.lang-code')
     };
 
     let copyCountdownInterval = null;
+
+    // Translation Functions
+    function t(key) {
+        return translations[currentLang][key] || translations['en'][key] || key;
+    }
+
+    function applyTranslations() {
+        // Update lang code display
+        elements.langCode.textContent = currentLang.toUpperCase();
+        document.documentElement.lang = currentLang;
+
+        // Update elements with data-i18n attribute (text content)
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[currentLang][key]) {
+                el.textContent = translations[currentLang][key];
+            }
+        });
+
+        // Update elements with data-i18n-html attribute (innerHTML for bold text etc)
+        document.querySelectorAll('[data-i18n-html]').forEach(el => {
+            const key = el.getAttribute('data-i18n-html');
+            if (translations[currentLang][key]) {
+                el.innerHTML = translations[currentLang][key];
+            }
+        });
+
+        // Update elements with data-i18n-placeholder attribute
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (translations[currentLang][key]) {
+                el.placeholder = translations[currentLang][key];
+            }
+        });
+
+        // Update elements with data-i18n-title attribute
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const key = el.getAttribute('data-i18n-title');
+            if (translations[currentLang][key]) {
+                el.title = translations[currentLang][key];
+            }
+        });
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'en' ? 'nl' : 'en';
+        localStorage.setItem(CONFIG.langStorageKey, currentLang);
+        applyTranslations();
+    }
 
     // Utility Functions
     function showToast(message, type = 'info', duration = 2500) {
@@ -99,7 +281,7 @@
                 renderSearchResults(combined);
             } else {
                 elements.searchResults.classList.add('hidden');
-                showToast('No locations found', 'info');
+                showToast(t('noLocationsFound'), 'info');
             }
         } catch (error) {
             console.error('Search error:', error);
@@ -427,7 +609,7 @@
     // Actions
     async function handleLocate() {
         if (!navigator.geolocation) {
-            showToast('Location not supported', 'error');
+            showToast(t('locationNotSupported'), 'error');
             return;
         }
 
@@ -444,7 +626,7 @@
             }
         }
 
-        showToast('Finding location...');
+        showToast(t('findingLocation'));
         elements.locateBtn.classList.add('active');
 
         navigator.geolocation.getCurrentPosition(
@@ -466,7 +648,7 @@
                 });
 
                 elements.locateBtn.classList.remove('active');
-                showToast('Location found', 'success');
+                showToast(t('locationFound'), 'success');
             },
             (error) => {
                 elements.locateBtn.classList.remove('active');
@@ -475,10 +657,10 @@
                     elements.locationModal.classList.remove('hidden');
                 } else {
                     const messages = {
-                        2: 'Location unavailable',
-                        3: 'Location timeout'
+                        2: t('locationUnavailable'),
+                        3: t('locationTimeout')
                     };
-                    showToast(messages[error.code] || 'Location error', 'error');
+                    showToast(messages[error.code] || t('locationError'), 'error');
                 }
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -489,7 +671,7 @@
         if (draw) {
             draw.changeMode('draw_polygon');
             elements.drawBtn.classList.add('active');
-            showToast('Tap to add points');
+            showToast(t('tapToAddPoints'));
         }
     }
 
@@ -497,13 +679,13 @@
         if (draw) {
             const data = draw.getAll();
             if (data.features.length === 0) {
-                showToast('Nothing to clear');
+                showToast(t('nothingToClear'));
                 return;
             }
             draw.deleteAll();
             updateAreaDisplay();
             saveDrawData();
-            showToast('Cleared');
+            showToast(t('clearedAll'));
         }
     }
 
@@ -542,12 +724,12 @@
             // If window.close() didn't work (e.g., not opened by script), update the message
             setTimeout(() => {
                 // If we're still here, the close didn't work
-                elements.countdownTimer.parentElement.textContent = 'You can now close this tab manually.';
-                elements.backToFormBtn.textContent = 'Close Tab';
+                elements.countdownTimer.parentElement.textContent = t('closeTabManually');
+                elements.backToFormBtn.textContent = t('closeTab');
             }, 100);
         } catch (e) {
-            elements.countdownTimer.parentElement.textContent = 'You can now close this tab manually.';
-            elements.backToFormBtn.textContent = 'Close Tab';
+            elements.countdownTimer.parentElement.textContent = t('closeTabManually');
+            elements.backToFormBtn.textContent = t('closeTab');
         }
     }
 
@@ -566,7 +748,7 @@
         const polygons = data.features.filter(f => f.geometry.type === 'Polygon');
 
         if (polygons.length === 0) {
-            showToast('No polygons to copy', 'error');
+            showToast(t('noPolygonsToCopy'), 'error');
             return;
         }
 
@@ -600,7 +782,7 @@
                 document.execCommand('copy');
                 copySuccess = true;
             } catch (e) {
-                showToast('Failed to copy', 'error');
+                showToast(t('failedToCopy'), 'error');
             }
             document.body.removeChild(textarea);
         }
@@ -648,6 +830,9 @@
         elements.helpBtn.addEventListener('click', () => {
             elements.helpModal.classList.remove('hidden');
         });
+
+        // Language toggle
+        elements.langToggle.addEventListener('click', toggleLanguage);
 
         // Back to form button in copy success modal
         elements.backToFormBtn.addEventListener('click', closeTabOrShowMessage);
@@ -712,6 +897,7 @@
 
     // Initialize
     function init() {
+        applyTranslations();
         setupEventListeners();
         initMap(CONFIG.embeddedApiKey);
     }

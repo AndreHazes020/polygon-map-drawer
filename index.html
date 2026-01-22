@@ -24,22 +24,30 @@
 </head>
 <body>
     <div id="app">
-        <!-- Search Bar -->
-        <div class="search-container">
-            <div class="search-bar">
-                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="M21 21l-4.35-4.35"></path>
-                </svg>
-                <input type="text" id="search-input" placeholder="Search location" autocomplete="off">
-                <button id="search-clear" class="search-clear hidden" aria-label="Clear">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.3)"/>
-                        <path d="M15 9l-6 6M9 9l6 6" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <div class="search-bar">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="M21 21l-4.35-4.35"></path>
                     </svg>
-                </button>
+                    <input type="text" id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search location" autocomplete="off">
+                    <button id="search-clear" class="search-clear hidden" aria-label="Clear">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.3)"/>
+                            <path d="M15 9l-6 6M9 9l6 6" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="search-results" class="search-results hidden"></div>
             </div>
-            <div id="search-results" class="search-results hidden"></div>
+
+            <!-- Language Toggle -->
+            <button id="lang-toggle" class="lang-toggle" title="Switch language">
+                <span class="lang-code">EN</span>
+            </button>
         </div>
 
         <!-- Map Container -->
@@ -47,43 +55,43 @@
 
         <!-- Info Panel -->
         <div id="info-panel" class="info-panel">
-            <span id="area-display">Tap Draw to start</span>
+            <span id="area-display" data-i18n="tapToStart">Tap Draw to start</span>
         </div>
 
         <!-- Bottom Toolbar -->
         <div class="toolbar">
-            <button id="locate-btn" class="toolbar-btn" title="My Location">
+            <button id="locate-btn" class="toolbar-btn" data-i18n-title="locateTitle" title="My Location">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
                     <circle cx="12" cy="12" r="7"/>
                     <circle cx="12" cy="12" r="3" fill="currentColor"/>
                 </svg>
-                <span>Locate</span>
+                <span data-i18n="locate">Locate</span>
             </button>
-            <button id="draw-btn" class="toolbar-btn" title="Draw polygon">
+            <button id="draw-btn" class="toolbar-btn" data-i18n-title="drawTitle" title="Draw polygon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M12 3l9 5.5v7L12 21l-9-5.5v-7L12 3z"/>
                 </svg>
-                <span>Draw</span>
+                <span data-i18n="draw">Draw</span>
             </button>
-            <button id="clear-btn" class="toolbar-btn" title="Clear all">
+            <button id="clear-btn" class="toolbar-btn" data-i18n-title="clearTitle" title="Clear all">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
                 </svg>
-                <span>Clear</span>
+                <span data-i18n="clear">Clear</span>
             </button>
-            <button id="copy-btn" class="toolbar-btn" title="Finish and copy GeoJSON">
+            <button id="copy-btn" class="toolbar-btn" data-i18n-title="finishTitle" title="Finish and copy GeoJSON">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M20 6L9 17l-5-5"/>
                 </svg>
-                <span>Finish</span>
+                <span data-i18n="finish">Finish</span>
             </button>
-            <button id="help-btn" class="toolbar-btn" title="Help">
+            <button id="help-btn" class="toolbar-btn" data-i18n-title="helpTitle" title="Help">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M9 9a3 3 0 115.83 1c0 2-3 3-3 3M12 17h.01"/>
                 </svg>
-                <span>Help</span>
+                <span data-i18n="help">Help</span>
             </button>
         </div>
 
@@ -92,7 +100,7 @@
             <div class="modal-backdrop"></div>
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>Enable Location</h2>
+                    <h2 data-i18n="enableLocation">Enable Location</h2>
                     <button class="modal-close" aria-label="Close">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.1)"/>
@@ -101,16 +109,16 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p class="permission-intro">Location access is blocked. You can either enable it in your browser settings, or use the <strong>Search bar</strong> to find your restoration site.</p>
+                    <p class="permission-intro" data-i18n-html="locationBlocked">Location access is blocked. You can either enable it in your browser settings, or use the <strong>Search bar</strong> to find your restoration site.</p>
 
                     <div class="help-note" style="margin-top: 0; margin-bottom: 16px;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
                         </svg>
-                        <p><strong>Alternative:</strong> Close this and use the search bar at the top to find your location by name.</p>
+                        <p data-i18n-html="locationAlternative"><strong>Alternative:</strong> Close this and use the search bar at the top to find your location by name.</p>
                     </div>
 
-                    <p class="permission-intro" style="margin-bottom: 12px; font-size: 13px; color: var(--text-tertiary);">To enable location access:</p>
+                    <p class="permission-intro" style="margin-bottom: 12px; font-size: 13px; color: var(--text-tertiary);" data-i18n="toEnableLocation">To enable location access:</p>
 
                     <div class="help-item">
                         <div class="help-icon">
@@ -120,7 +128,7 @@
                         </div>
                         <div>
                             <h3>iPhone / iPad</h3>
-                            <p>Settings → Safari → Location → Allow</p>
+                            <p data-i18n="iosInstructions">Settings → Safari → Location → Allow</p>
                         </div>
                     </div>
 
@@ -132,7 +140,7 @@
                         </div>
                         <div>
                             <h3>Android</h3>
-                            <p>Tap the lock icon in browser → Permissions → Location → Allow</p>
+                            <p data-i18n="androidInstructions">Tap the lock icon in browser → Permissions → Location → Allow</p>
                         </div>
                     </div>
 
@@ -145,7 +153,7 @@
                         </div>
                         <div>
                             <h3>Desktop</h3>
-                            <p>Click the lock/info icon in the address bar → Location → Allow</p>
+                            <p data-i18n="desktopInstructions">Click the lock/info icon in the address bar → Location → Allow</p>
                         </div>
                     </div>
                 </div>
@@ -157,7 +165,7 @@
             <div class="modal-backdrop"></div>
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>How to Use</h2>
+                    <h2 data-i18n="howToUse">How to Use</h2>
                     <button class="modal-close" aria-label="Close">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.1)"/>
@@ -169,22 +177,22 @@
                     <div class="help-item">
                         <div class="help-step">1</div>
                         <div>
-                            <h3>Find Your Location</h3>
-                            <p>Tap <strong>Locate</strong> to jump to your current position, or use the <strong>Search bar</strong> to find your restoration site.</p>
+                            <h3 data-i18n="helpStep1Title">Find Your Location</h3>
+                            <p data-i18n-html="helpStep1Desc">Tap <strong>Locate</strong> to jump to your current position, or use the <strong>Search bar</strong> to find your restoration site.</p>
                         </div>
                     </div>
                     <div class="help-item">
                         <div class="help-step">2</div>
                         <div>
-                            <h3>Draw the Restoration Area</h3>
-                            <p>Tap <strong>Draw</strong>, then tap points around your restoration area. Connect the last point to the first to close the shape.</p>
+                            <h3 data-i18n="helpStep2Title">Draw the Restoration Area</h3>
+                            <p data-i18n-html="helpStep2Desc">Tap <strong>Draw</strong>, then tap points around your restoration area. Connect the last point to the first to close the shape.</p>
                         </div>
                     </div>
                     <div class="help-item">
                         <div class="help-step">3</div>
                         <div>
-                            <h3>Finish & Return</h3>
-                            <p>Tap <strong>Finish</strong> to copy the polygon data and return to the form where you can paste it.</p>
+                            <h3 data-i18n="helpStep3Title">Finish & Return</h3>
+                            <p data-i18n-html="helpStep3Desc">Tap <strong>Finish</strong> to copy the polygon data and return to the form where you can paste it.</p>
                         </div>
                     </div>
                     <div class="help-note">
@@ -192,7 +200,7 @@
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 16v-4M12 8h.01"/>
                         </svg>
-                        <p>Made a mistake? Tap <strong>Clear</strong> to remove all drawings and start over.</p>
+                        <p data-i18n-html="helpNote">Made a mistake? Tap <strong>Clear</strong> to remove all drawings and start over.</p>
                     </div>
                 </div>
             </div>
@@ -208,10 +216,10 @@
                         <path d="M9 12l2 2 4-4"/>
                     </svg>
                 </div>
-                <h2>Polygon Copied!</h2>
-                <p class="copy-success-message">You have successfully copied your polygon. You will now be redirected back to the form where you can paste the GeoJSON.</p>
-                <p class="copy-countdown">Closing in <span id="countdown-timer">10</span> seconds...</p>
-                <button id="back-to-form-btn" class="back-to-form-btn">Back to Form</button>
+                <h2 data-i18n="polygonCopied">Polygon Copied!</h2>
+                <p class="copy-success-message" data-i18n="copySuccessMessage">You have successfully copied your polygon. You will now be redirected back to the form where you can paste the GeoJSON.</p>
+                <p class="copy-countdown"><span data-i18n="closingIn">Closing in</span> <span id="countdown-timer">10</span> <span data-i18n="seconds">seconds</span>...</p>
+                <button id="back-to-form-btn" class="back-to-form-btn" data-i18n="backToForm">Back to Form</button>
             </div>
         </div>
 
