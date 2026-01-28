@@ -35,7 +35,7 @@
             helpTitle: 'Help',
 
             // Info panel
-            tapToStart: 'Tap Draw to start',
+            tapToStart: 'Tap Draw to start · Tap Help for instructions',
             area: 'Area',
 
             // Location modal
@@ -97,7 +97,7 @@
             helpTitle: 'Help',
 
             // Info panel
-            tapToStart: 'Tik op Teken om te starten',
+            tapToStart: 'Tik op Teken om te starten · Tik op Help voor instructies',
             area: 'Oppervlakte',
 
             // Location modal
@@ -156,6 +156,7 @@
         searchInput: document.getElementById('search-input'),
         searchClear: document.getElementById('search-clear'),
         searchResults: document.getElementById('search-results'),
+        infoPanel: document.getElementById('info-panel'),
         areaDisplay: document.getElementById('area-display'),
         locateBtn: document.getElementById('locate-btn'),
         drawBtn: document.getElementById('draw-btn'),
@@ -613,7 +614,8 @@
         const data = draw.getAll();
 
         if (data.features.length === 0) {
-            elements.areaDisplay.textContent = 'Tap Draw to start';
+            elements.areaDisplay.textContent = t('tapToStart');
+            elements.infoPanel.classList.remove('has-area');
             return;
         }
 
@@ -626,10 +628,13 @@
 
         if (polygons.length === 0) {
             elements.areaDisplay.textContent = 'Complete your polygon';
+            elements.infoPanel.classList.remove('has-area');
         } else if (polygons.length === 1) {
-            elements.areaDisplay.innerHTML = `Area: <span class="area-value">${formatArea(totalArea)}</span>`;
+            elements.areaDisplay.innerHTML = `${t('area')}: <span class="area-value">${formatArea(totalArea)}</span>`;
+            elements.infoPanel.classList.add('has-area');
         } else {
             elements.areaDisplay.innerHTML = `${polygons.length} polygons: <span class="area-value">${formatArea(totalArea)}</span>`;
+            elements.infoPanel.classList.add('has-area');
         }
     }
 
