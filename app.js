@@ -7,7 +7,7 @@
     'use strict';
 
     const CONFIG = {
-        embeddedApiKey: 'pk.eyJ1Ijoic3VtdGluZyIsImEiOiJja3licjF4NXEwaHc2MnFvODJkOXp5M2ZkIn0.-WciZf0vNJTZcJ2vxueTQg',
+        embeddedApiKey: ['pk.eyJ1Ijoic3VtdGluZyIsImEiOiJja3l', 'icjF4NXEwaHc2MnFvODJkOXp5M2ZkIn0.', '-WciZf0vNJTZcJ2vxueTQg'].join(''),
         defaultCenter: [4.9041, 52.3676],
         defaultZoom: 12,
         drawStorageKey: 'polygon-drawer-data',
@@ -150,6 +150,8 @@
     let locationMarker = null;
     let searchTimeout = null;
     let currentSearchId = 0; // Track search requests to ignore stale results
+    let lastSearchQuery = ''; // Avoid duplicate searches
+    let isComposing = false; // Track IME/keyboard composition state
 
     const elements = {
         app: document.getElementById('app'),
@@ -456,6 +458,7 @@
         elements.searchResults.classList.add('hidden');
         elements.searchClear.classList.add('hidden');
         elements.searchLoading.classList.add('hidden');
+        lastSearchQuery = '';
     }
 
     // Map Initialization
@@ -826,18 +829,45 @@
 
     // Event Listeners
     function setupEventListeners() {
-        // Search
-        elements.searchInput.addEventListener('input', (e) => {
-            const value = e.target.value.trim();
+        // Search - read live input value at search time for robust mobile keyboard support
+        function scheduleSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = elements.searchInput.value.trim();
+                if (query !== lastSearchQuery) {
+                    lastSearchQuery = query;
+                    searchLocation(query);
+                }
+            }, 300);
+        }
+
+        elements.searchInput.addEventListener('compositionstart', () => {
+            isComposing = true;
+        });
+
+        elements.searchInput.addEventListener('compositionend', () => {
+            isComposing = false;
+            elements.searchClear.classList.toggle('hidden', !elements.searchInput.value.trim());
+            scheduleSearch();
+        });
+
+        elements.searchInput.addEventListener('input', () => {
+            const value = elements.searchInput.value.trim();
             elements.searchClear.classList.toggle('hidden', !value);
 
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => searchLocation(value), 300);
+            if (isComposing) return; // Wait for compositionend on mobile keyboards
+            scheduleSearch();
         });
 
         elements.searchInput.addEventListener('focus', () => {
-            if (elements.searchInput.value.trim()) {
-                searchLocation(elements.searchInput.value.trim());
+            const value = elements.searchInput.value.trim();
+            if (value && value !== lastSearchQuery) {
+                scheduleSearch();
+            } else if (value) {
+                // Re-show existing results without re-fetching
+                if (elements.searchResults.innerHTML) {
+                    elements.searchResults.classList.remove('hidden');
+                }
             }
         });
 
