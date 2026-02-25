@@ -268,11 +268,74 @@
         }
     }
 
+    // Coordinate Parsing - supports DMS (e.g. 0°05'22.2"N 29°55'30.4"E) and decimal formats
+    function parseCoordinates(query) {
+        // Try DMS format: 0°05'22.2"N 29°55'30.4"E
+        const dmsPattern = /(\d+)\s*[°]\s*(\d+)\s*['''′]\s*(\d+(?:\.\d+)?)\s*["""″]\s*([NSEWnsew])/g;
+        const dmsMatches = [...query.matchAll(dmsPattern)];
+
+        if (dmsMatches.length === 2) {
+            let lat = null, lng = null;
+
+            for (const match of dmsMatches) {
+                const degrees = parseFloat(match[1]);
+                const minutes = parseFloat(match[2]);
+                const seconds = parseFloat(match[3]);
+                const direction = match[4].toUpperCase();
+
+                let decimal = degrees + minutes / 60 + seconds / 3600;
+                if (direction === 'S' || direction === 'W') {
+                    decimal = -decimal;
+                }
+
+                if (direction === 'N' || direction === 'S') {
+                    lat = decimal;
+                } else {
+                    lng = decimal;
+                }
+            }
+
+            if (lat !== null && lng !== null && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                return { lat, lng };
+            }
+        }
+
+        // Try decimal format: 52.3676, 4.9041 or 52.3676 4.9041
+        const decimalPattern = /^\s*(-?\d+\.?\d*)\s*[,;\s]\s*(-?\d+\.?\d*)\s*$/;
+        const decimalMatch = query.match(decimalPattern);
+
+        if (decimalMatch) {
+            const first = parseFloat(decimalMatch[1]);
+            const second = parseFloat(decimalMatch[2]);
+
+            if (first >= -90 && first <= 90 && second >= -180 && second <= 180) {
+                return { lat: first, lng: second };
+            }
+        }
+
+        return null;
+    }
+
     // Search Functionality - uses both Mapbox and OpenStreetMap for better results
     async function searchLocation(query) {
         if (!query || query.length < 2) {
             elements.searchResults.classList.add('hidden');
             elements.searchLoading.classList.add('hidden');
+            return;
+        }
+
+        // Check if query contains coordinates (DMS or decimal)
+        const coords = parseCoordinates(query);
+        if (coords) {
+            elements.searchLoading.classList.add('hidden');
+            const name = `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
+            renderSearchResults([{
+                name: name,
+                detail: query.trim(),
+                lng: coords.lng,
+                lat: coords.lat,
+                source: 'coordinates'
+            }]);
             return;
         }
 
@@ -420,8 +483,8 @@
 
     function renderSearchResults(results) {
         elements.searchResults.innerHTML = results.map(result => {
-            // Different icon for OSM vs Mapbox results
-            const iconColor = result.source === 'osm' ? '#30d158' : 'currentColor';
+            // Different icon for OSM vs Mapbox vs coordinate results
+            const iconColor = result.source === 'coordinates' ? '#ff9f0a' : result.source === 'osm' ? '#30d158' : 'currentColor';
             return `
                 <div class="search-result" data-lng="${result.lng}" data-lat="${result.lat}" data-name="${result.name}">
                     <div class="search-result-icon">
