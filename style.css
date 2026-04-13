@@ -356,6 +356,26 @@ body {
     color: var(--accent);
 }
 
+/* Highlighted Draw Button */
+.toolbar-btn.toolbar-btn--draw {
+    background: rgba(10, 132, 255, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(10, 132, 255, 0.3);
+    position: relative;
+}
+
+.toolbar-btn.toolbar-btn--draw:hover {
+    background: rgba(10, 132, 255, 0.2);
+    border-color: rgba(10, 132, 255, 0.5);
+    color: var(--accent-hover);
+}
+
+.toolbar-btn.toolbar-btn--draw.active {
+    background: rgba(10, 132, 255, 0.25);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(10, 132, 255, 0.3);
+}
+
 /* Modals */
 .modal {
     position: fixed;
