@@ -29,13 +29,13 @@
             finish: 'Finish',
             help: 'Help',
             locateTitle: 'My Location',
-            drawTitle: 'Draw polygon',
+            drawTitle: 'Draw polygon (tap again for multipolygon)',
             clearTitle: 'Clear all',
             finishTitle: 'Finish and copy GeoJSON',
             helpTitle: 'Help',
 
             // Info panel
-            tapToStart: 'Tap Draw to start · Tap Help for instructions',
+            tapToStart: 'Tap Draw to start — draw multiple polygons if needed',
             area: 'Area',
 
             // Location modal
@@ -52,7 +52,7 @@
             helpStep1Title: 'Find Your Location',
             helpStep1Desc: 'Tap <strong>Locate</strong> to jump to your current position, or use the <strong>Search bar</strong> to find your restoration site.',
             helpStep2Title: 'Draw the Restoration Area',
-            helpStep2Desc: 'Tap <strong>Draw</strong>, then tap points around your restoration area. Connect the last point to the first to close the shape.',
+            helpStep2Desc: 'Tap <strong>Draw</strong>, then tap points around your restoration area. Connect the last point to the first to close the shape. You can tap <strong>Draw</strong> again to add more polygons — perfect for multiple or non-contiguous areas.',
             helpStep3Title: 'Finish & Return',
             helpStep3Desc: 'Tap <strong>Finish</strong> to copy the polygon data and return to the form where you can paste it.',
             helpNote: 'Made a mistake? Tap <strong>Clear</strong> to remove all drawings and start over.',
@@ -91,13 +91,13 @@
             finish: 'Klaar',
             help: 'Help',
             locateTitle: 'Mijn Locatie',
-            drawTitle: 'Teken polygoon',
+            drawTitle: 'Teken polygoon (tik nogmaals voor multipolygoon)',
             clearTitle: 'Alles wissen',
             finishTitle: 'Klaar en kopieer GeoJSON',
             helpTitle: 'Help',
 
             // Info panel
-            tapToStart: 'Tik op Teken om te starten · Tik op Help voor instructies',
+            tapToStart: 'Tik op Teken om te starten — teken meerdere polygonen indien nodig',
             area: 'Oppervlakte',
 
             // Location modal
@@ -114,7 +114,7 @@
             helpStep1Title: 'Vind Je Locatie',
             helpStep1Desc: 'Tik op <strong>Locatie</strong> om naar je huidige positie te gaan, of gebruik de <strong>Zoekbalk</strong> om je herstellocatie te vinden.',
             helpStep2Title: 'Teken het Herstelgebied',
-            helpStep2Desc: 'Tik op <strong>Teken</strong>, tik dan punten rondom je herstelgebied. Verbind het laatste punt met het eerste om de vorm te sluiten.',
+            helpStep2Desc: 'Tik op <strong>Teken</strong>, tik dan punten rondom je herstelgebied. Verbind het laatste punt met het eerste om de vorm te sluiten. Je kunt nogmaals op <strong>Teken</strong> tikken om meer polygonen toe te voegen — ideaal voor meerdere of niet-aaneengesloten gebieden.',
             helpStep3Title: 'Klaar & Terug',
             helpStep3Desc: 'Tik op <strong>Klaar</strong> om de polygoongegevens te kopiëren en terug te keren naar het formulier waar je het kunt plakken.',
             helpNote: 'Foutje gemaakt? Tik op <strong>Wissen</strong> om alle tekeningen te verwijderen en opnieuw te beginnen.',
